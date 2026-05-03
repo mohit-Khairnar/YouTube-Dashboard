@@ -2,10 +2,8 @@ import streamlit as st
 import pandas as pd
 from datetime import timedelta, datetime
 
-# Page config
 st.set_page_config(page_title="YouTube Channel Dashboard", layout="wide")
 
-# -------------------- LOAD DATA --------------------
 @st.cache_data
 def load_data():
     data = pd.read_csv("C:/Users/mohit_zswpgpr/Downloads/youtube_channel_data.csv")
@@ -15,7 +13,6 @@ def load_data():
 
 df = load_data()
 
-# -------------------- CUSTOM QUARTER --------------------
 def custom_quarter(date):
     month = date.month
     year = date.year
@@ -28,7 +25,6 @@ def custom_quarter(date):
     else:
         return pd.Period(year=year if month != 1 else year - 1, quarter=4, freq='Q')
 
-# -------------------- AGGREGATION --------------------
 def aggregate_data(df, freq):
     if freq == 'Q':
         df['CUSTOM_Q'] = df['DATE'].apply(custom_quarter)
@@ -60,7 +56,6 @@ def get_monthly_data(df):
 def get_quarterly_data(df):
     return aggregate_data(df, 'Q')
 
-# -------------------- UTIL FUNCTIONS --------------------
 def format_with_commas(number):
     return f"{int(number):,}"
 
@@ -117,7 +112,6 @@ def display_metric(col, title, value, df, column, color, time_frame):
             if not is_period_complete(last_period, freq_map[time_frame]):
                 st.caption(f"Note: Last {time_frame.lower()} is incomplete")
 
-# -------------------- SIDEBAR --------------------
 with st.sidebar:
     st.title("📊 YouTube Channel Dashboard")
 
@@ -132,7 +126,6 @@ with st.sidebar:
     time_frame = st.selectbox("Select time frame", ("Daily", "Weekly", "Monthly", "Quarterly"))
     chart_selection = st.selectbox("Select chart type", ("Bar", "Area"))
 
-# -------------------- DATA SELECTION --------------------
 if time_frame == 'Daily':
     df_display = df.set_index('DATE')
 elif time_frame == 'Weekly':
@@ -142,7 +135,6 @@ elif time_frame == 'Monthly':
 elif time_frame == 'Quarterly':
     df_display = get_quarterly_data(df)
 
-# -------------------- ALL TIME METRICS --------------------
 st.subheader("📌 All-Time Statistics")
 
 metrics = [
@@ -158,7 +150,6 @@ for col, (title, column, color) in zip(cols, metrics):
     total_value = df[column].sum()
     display_metric(col, title, total_value, df_display, column, color, time_frame)
 
-# -------------------- FILTERED DATA --------------------
 st.subheader("📅 Selected Duration")
 
 if time_frame == 'Quarterly':
@@ -175,6 +166,5 @@ cols = st.columns(4)
 for col, (title, column, color) in zip(cols, metrics):
     display_metric(col, title.split()[-1], df_filtered[column].sum(), df_filtered, column, color, time_frame)
 
-# -------------------- DATA TABLE --------------------
 with st.expander("📄 View Data"):
     st.dataframe(df_filtered)
